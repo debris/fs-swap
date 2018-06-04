@@ -1,0 +1,10 @@
+[package]
+name = "fs-swap"
+version = "0.1.0"
+authors = ["debris <marek.kotewicz@gmail.com>"]
+description = "Naive implementation of path swap"
+license = "MIT"
+homepage = "https://github.com/debris/fs-swap"
+
+[dev-dependencies]
+tempdir = "0.3"
