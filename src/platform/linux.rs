@@ -3,11 +3,11 @@ use std::{io, ffi};
 use std::path::Path;
 use libc;
 
-extern "stdcall" {
-	fn renameat2(
-		olddirfd: libc::c_int, oldpath: *const libc::c_char, 
-		newdirfd: libc::c_int, newpath: *const libc::c_char, flags: libc::c_int
-	) -> libc::c_int;
+unsafe fn renameat2(
+	olddirfd: libc::c_int, oldpath: *const libc::c_char, 
+	newdirfd: libc::c_int, newpath: *const libc::c_char, flags: libc::c_int
+) -> libc::c_int {
+	libc::syscall(libc::SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags) as libc::c_int
 }
 
 pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<Path> {
