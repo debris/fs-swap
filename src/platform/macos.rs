@@ -5,6 +5,8 @@ use libc;
 
 extern "stdcall" {
 	fn renamex_np(oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int;
+
+	fn exchangedata(oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int;
 }
 
 pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<Path> {
@@ -16,9 +18,19 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 		.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
 	unsafe {
-		match renamex_np(a_path.as_ptr(), b_path.as_ptr(), RENAME_SWAP) {
-			0 => Ok(()),
-			_ => Err(io::Error::new(io::ErrorKind::Other, format!("renamex_np failed with code: {}", *libc::__error()))),
+		if renamex_np(a_path.as_ptr(), b_path.as_ptr(), RENAME_SWAP) == 0 {
+			return Ok(());
+		}
+
+		let err = *libc::__error();
+		if err == libc::ENOTSUP {
+			if exchangedata(a_path.as_ptr(), b_path.as_ptr(), 0) == 0 {
+				Ok(())
+			} else {
+				Err(io::Error::new(io::ErrorKind::Other, format!("exchangedata failed with code: {}", *libc::__error())))
+			}
+		} else {
+			Err(io::Error::new(io::ErrorKind::Other, format!("renamex_np failed with code: {}", err)))
 		}
 	}
 }
