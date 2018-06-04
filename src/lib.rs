@@ -43,9 +43,9 @@ mod tests {
 
 	#[test]
 	fn test_swap_files() {
-		let dir = TempDir::new("").unwrap();
-		let path_a = dir.path().join("file_a");
-		let path_b = dir.path().join("file_b");
+		let dir = ::std::env::current_dir().unwrap();
+		let path_a = dir.join("file_a");
+		let path_b = dir.join("file_b");
 		write_to_file(&path_a, "foo");
 		write_to_file(&path_b, "bar");
 		swap(&path_a, &path_b).unwrap();
@@ -57,10 +57,14 @@ mod tests {
 
 	#[test]
 	fn test_swap_dirs() {
-		let dir_a = TempDir::new("a").unwrap();
-		let dir_b = TempDir::new("b").unwrap();
-		let path_a = dir_a.path().join("file");
-		let path_b = dir_b.path().join("file");
+		let dir_a = ::std::env::current_dir().unwrap().join("a");
+		let dir_b = ::std::env::current_dir().unwrap().join("b");
+		::std::fs::create_dir(&dir_a).unwrap();
+		::std::fs::create_dir(&dir_b).unwrap();
+		//let dir_a = TempDir::new("a").unwrap();
+		//let dir_b = TempDir::new("b").unwrap();
+		let path_a = dir_a.join("file");
+		let path_b = dir_b.join("file");
 		write_to_file(&path_a, "foo");
 		write_to_file(&path_b, "bar");
 		swap(&dir_a, &dir_b).unwrap();
