@@ -1,54 +1,15 @@
 //! Naive implementation of path swap.
 
-use std::{fs, io};
+extern crate libc;
+
+mod platform;
+
+use std::io;
 use std::path::Path;
 
-const TMP_SWAP_FILE: &'static str = "tmp.fs_swap";
-
 /// Swaps the content of paths `a` and `b`.
-/// 
-/// Naive implementation. Not atomic, creates temporary file to perform the swap.
 pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<Path> {
-	let a = a.as_ref();
-	let b = b.as_ref();
-	let tmp = { 
-		let mut tmp = a.to_path_buf();
-		tmp.pop();
-		tmp.push(TMP_SWAP_FILE);
-		tmp
-	};
-
-	// cleanup
-	match fs::metadata(&tmp) {
-		Ok(ref meta) if meta.is_dir() => fs::remove_dir_all(&tmp)?,
-		Ok(_) => fs::remove_file(&tmp)?,
-		Err(ref err) if err.kind() == io::ErrorKind::NotFound => (),
-		Err(err) => return Err(err),
-	}
-
-	// rename a to tmp
-	// if it fails, the directories are unchanged
-	fs::rename(a, &tmp)?;
-
-	match fs::rename(b, a) {
-		Ok(_) => (),
-		Err(_) => {
-			// let's try to recover the previous state
-			// if it fails, there is nothing we can do
-			return fs::rename(&tmp, a);
-		},
-	}
-
-	// rename tmp to b
-	match fs::rename(&tmp, b) {
-		Ok(_) => Ok(()),
-		Err(_) => {
-			// let's try to recover to previous state
-			// if it fails, there is nothing we can do
-			fs::rename(a, b)?;
-			fs::rename(&tmp, a)
-		},
-	}
+	platform::swap(a, b)
 }
 
 #[cfg(test)]

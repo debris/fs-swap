@@ -6,5 +6,8 @@ description = "Naive implementation of path swap"
 license = "MIT"
 homepage = "https://github.com/debris/fs-swap"
 
+[dependencies]
+libc = "0.2.4"
+
 [dev-dependencies]
 tempdir = "0.3"
