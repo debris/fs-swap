@@ -16,8 +16,10 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 	let b_path = ffi::CString::new(b.as_ref().as_os_str().as_bytes())
 		.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
-	match unsafe { renameat2(libc::AT_FDCWD, a_path.as_ptr(), libc::AT_FDCWD, b_path.as_ptr(), libc::RENAME_EXCHANGE) } {
-		0 => Ok(()),
-		code => Err(io::Error::new(io::ErrorKind::Other, format!("renameat2 failed with code: {}", code))),
+	unsafe {
+		match renameat2(libc::AT_FDCWD, a_path.as_ptr(), libc::AT_FDCWD, b_path.as_ptr(), libc::RENAME_EXCHANGE) {
+			0 => Ok(()),
+			code => Err(io::Error::new(io::ErrorKind::Other, format!("renameat2 failed with code: {}", *libc::__errno_location()))),
+		}
 	}
 }

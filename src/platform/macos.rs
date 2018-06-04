@@ -23,14 +23,17 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 		}
 
 		let err = *libc::__error();
-		if err == libc::ENOTSUP {
-			if exchangedata(a_path.as_ptr(), b_path.as_ptr(), 0) == 0 {
-				Ok(())
-			} else {
-				Err(io::Error::new(io::ErrorKind::Other, format!("exchangedata failed with code: {}", *libc::__error())))
-			}
-		} else {
-			Err(io::Error::new(io::ErrorKind::Other, format!("renamex_np failed with code: {}", err)))
+		if err != libc::ENOTSUP {
+			return Err(io::Error::new(io::ErrorKind::Other, format!("renamex_np failed with code: {}", err)));
 		}
+
+		// some volumes do not support swapping
+		// it these cases, let's try to swap files using
+		// swapping directories returns `EINVAL`
+		if exchangedata(a_path.as_ptr(), b_path.as_ptr(), 0) == 0 {
+			return Ok(())
+		}
+
+		Err(io::Error::new(io::ErrorKind::Other, format!("exchangedata failed with code: {}", *libc::__error())))
 	}
 }

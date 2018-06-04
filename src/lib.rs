@@ -12,6 +12,11 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 	platform::swap(a, b)
 }
 
+/// Nonatomic swap.
+pub fn swap_nonatomic<A, B>(_a: A, _b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<Path> {
+	unimplemented!();
+}
+
 #[cfg(test)]
 mod tests {
 	extern crate tempdir;
@@ -55,6 +60,8 @@ mod tests {
 		assert_eq!("foo", read_b);
 	}
 
+	// atomic swaps of dirs are not supported on travis machines
+	#[cfg(not(target_os = "macos"))]
 	#[test]
 	fn test_swap_dirs() {
 		let dir_a = TempDir::new("a").unwrap();
