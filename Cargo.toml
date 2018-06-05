@@ -6,8 +6,11 @@ description = "Naive implementation of path swap"
 license = "MIT"
 homepage = "https://github.com/debris/fs-swap"
 
-[dependencies]
+[target.'cfg(unix)'.dependencies]
 libc = "0.2.4"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3.4", features = ["ktmw32", "handleapi", "fileapi", "errhandlingapi", "winbase"] }
 
 [dev-dependencies]
 tempdir = "0.3"

@@ -1,7 +1,8 @@
+extern crate libc;
+
 use std::os::unix::ffi::OsStrExt;
-use std::{io, ffi};
 use std::path::Path;
-use libc;
+use std::{io, ffi};
 
 unsafe fn renameat2(
 	olddirfd: libc::c_int, oldpath: *const libc::c_char, 
@@ -11,15 +12,13 @@ unsafe fn renameat2(
 }
 
 pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<Path> {
-	let a_path = ffi::CString::new(a.as_ref().as_os_str().as_bytes())
-		.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-	let b_path = ffi::CString::new(b.as_ref().as_os_str().as_bytes())
-		.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+	let a_path = ffi::CString::new(a.as_ref().as_os_str().as_bytes())?;
+	let b_path = ffi::CString::new(b.as_ref().as_os_str().as_bytes())?;
 
 	unsafe {
 		match renameat2(libc::AT_FDCWD, a_path.as_ptr(), libc::AT_FDCWD, b_path.as_ptr(), libc::RENAME_EXCHANGE) {
 			0 => Ok(()),
-			code => Err(io::Error::new(io::ErrorKind::Other, format!("renameat2 failed with code: {}", *libc::__errno_location()))),
+			_ => Err(io::Error::new(io::ErrorKind::Other, format!("renameat2 failed with code: {}", *libc::__errno_location()))),
 		}
 	}
 }

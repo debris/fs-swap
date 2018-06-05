@@ -1,7 +1,5 @@
 //! Naive implementation of path swap.
 
-extern crate libc;
-
 mod platform;
 
 use std::io;
