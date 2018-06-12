@@ -1,4 +1,4 @@
-//! Naive implementation of path swap.
+//! Cross-platform implementation of path swap.
 
 mod platform;
 

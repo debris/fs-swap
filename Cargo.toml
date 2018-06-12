@@ -1,8 +1,8 @@
 [package]
 name = "fs-swap"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["debris <marek.kotewicz@gmail.com>"]
-description = "Naive implementation of path swap"
+description = "Cross-platform implementation of path swap"
 license = "MIT"
 homepage = "https://github.com/debris/fs-swap"
 
@@ -14,3 +14,7 @@ winapi = { version = "0.3.4", features = ["ktmw32", "handleapi", "fileapi", "err
 
 [dev-dependencies]
 tempdir = "0.3"
+
+[badges]
+travis-ci = { repository = "debris/fs-swap", branch = "master"}
+appveyor = { repository = "debris/fs-swap", branch = "master"}
