@@ -100,7 +100,7 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 
 	let parent_dir = a.parent()
 		.or_else(|| b.parent())
-		.ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Could not find a parent directory"))?;
+		.ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Could not find a parent directory"))?;
 
 	let tmp = tmp_name_in_dir(parent_dir)?;
 
