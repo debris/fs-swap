@@ -16,8 +16,8 @@ use self::winapi::um::winbase::MoveFileTransactedW;
 /// Function used to create a temporary file in given directory
 fn tmp_name_in_dir(dir: &Path) -> io::Result<OsString> {
 	let mut out = Vec::with_capacity(MAX_PATH);
-	let pre: Vec<u16> = OsStr::new("tmp").encode_wide().collect();
-	let dir: Vec<u16> = OsStr::new(dir).encode_wide().collect();
+	let pre: Vec<u16> = OsStr::new("tmp").encode_wide().chain(Some(0)).collect();
+	let dir: Vec<u16> = OsStr::new(dir).encode_wide().chain(Some(0)).collect();
 
 	unsafe {
 		if GetTempFileNameW(dir.as_ptr(), pre.as_ptr(), 1, out.as_mut_ptr()) != 0 {
@@ -42,8 +42,8 @@ impl Transaction {
 	}
 
 	fn move_file<A, B>(&self, a: A, b: B) -> io::Result<()> where A: AsRef<OsStr>, B: AsRef<OsStr> {
-		let a: Vec<u16> = a.as_ref().encode_wide().collect();
-		let b: Vec<u16> = b.as_ref().encode_wide().collect();
+		let a: Vec<u16> = a.as_ref().encode_wide().chain(Some(0)).collect();
+		let b: Vec<u16> = b.as_ref().encode_wide().chain(Some(0)).collect();
 
 		unsafe {
 			if MoveFileTransactedW(a.as_ptr(), b.as_ptr(), None, ptr::null_mut(), 0, self.0) != FALSE {
