@@ -1,7 +1,6 @@
 environment:
   matrix:
   - FEATURES: ""
-  - FEATURES: "unstable"
 
 platform:
   - i686-pc-windows-gnu
