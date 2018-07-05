@@ -1,13 +1,28 @@
 sudo: true
 language: rust
-rust:
-  - stable
-  - beta
-  - nightly
-osx_image: xcode9.3
-os:
-  - linux
-  - osx
+matrix:
+  include:
+    - os: linux
+      rust: stable
+    - os: linux
+      rust: beta
+    - os: linux
+      rust: nightly
+    - os: osx
+      osx_image: xcode8
+      rust: stable
+    - os: osx
+      osx_image: xcode8.3
+      rust: stable
+    - os: osx
+      osx_image: xcode9.3
+      rust: stable
+    - os: osx
+      osx_image: xcode9.3
+      rust: beta
+    - os: osx
+      osx_image: xcode9.3
+      rust: nightly
 branches:
   only:
   - master

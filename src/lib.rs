@@ -1,5 +1,9 @@
 //! Cross-platform implementation of path swap.
 
+#[cfg(target_os = "macos")]
+#[macro_use]
+extern crate lazy_static;
+
 mod platform;
 
 use std::{fs, io};

@@ -11,6 +11,7 @@ libc = "0.2.4"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 libloading = "0.5"
+lazy_static = "1.0"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.4", features = ["ktmw32", "handleapi", "fileapi", "errhandlingapi", "winbase"] }

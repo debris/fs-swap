@@ -6,11 +6,14 @@ use std::path::Path;
 use std::{io, ffi};
 use self::libloading::os::unix::{Library, Symbol};
 
-/// `renamex_np` is available only on macos >= 10.12
-unsafe fn get_renamex_np() -> Option<Symbol<unsafe extern fn (oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int>> {
-	let lib = Library::this();
-	lib.get(b"renamex_np").ok()
+lazy_static! {
+	/// `renamex_np` is available only on macos >= 10.12
+	static ref RENAMEX_NP: Option<Symbol<unsafe extern fn (oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int>> = unsafe {
+		let lib = Library::this();
+		lib.get(b"renamex_np").ok()
+	};
 }
+
 
 extern "stdcall" {
 	fn exchangedata(oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int;
@@ -25,7 +28,7 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 	unsafe {
 		// `renamex_np` is available only on macos >= 10.12
 		// if not available, let's fallback to `exchangedata`
-		if let Some(renamex_np) = get_renamex_np() {
+		if let Some(ref renamex_np) = &*RENAMEX_NP {
 			if renamex_np(a_path.as_ptr(), b_path.as_ptr(), RENAME_SWAP) == 0 {
 				return Ok(())
 			}
