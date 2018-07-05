@@ -62,6 +62,11 @@ pub fn swap_nonatomic<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, 
 #[cfg(test)]
 mod tests {
 	extern crate tempdir;
+	#[cfg(target_os = "macos")]
+	extern crate libloading;
+	#[cfg(target_os = "macos")]
+	extern crate libc;
+
 	use std::fs;
 	use std::path::Path;
 	use std::io::{Write, Read};
@@ -102,7 +107,6 @@ mod tests {
 		assert_eq!("foo", read_b);
 	}
 
-	// atomic swaps of dirs are not supported on travis machines
 	#[cfg(not(target_os = "macos"))]
 	#[test]
 	fn test_swap_dirs() {
@@ -117,6 +121,38 @@ mod tests {
 		let read_b = read_from_file(&path_b);
 		assert_eq!("bar", read_a);
 		assert_eq!("foo", read_b);
+	}
+
+	#[cfg(target_os = "macos")]
+	#[test]
+	fn test_swap_dirs() {
+		use self::libloading::os::unix::{Library, Symbol};
+
+		lazy_static! {
+			/// `renamex_np` is available only on macos >= 10.12
+			static ref RENAMEX_NP: Option<Symbol<unsafe extern fn (oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int>> = unsafe {
+				let lib = Library::this();
+				lib.get(b"renamex_np").ok()
+			};
+		}
+		let dir_a = TempDir::new("a").unwrap();
+		let dir_b = TempDir::new("b").unwrap();
+		let path_a = dir_a.path().join("file");
+		let path_b = dir_b.path().join("file");
+		write_to_file(&path_a, "foo");
+		write_to_file(&path_b, "bar");
+		// `renamex_np` available test if `recursive swapping` works
+		if let Some(ref _renamex_np) = &*RENAMEX_NP {
+			swap(&dir_a, &dir_b).unwrap();
+			let read_a = read_from_file(&path_a);
+			let read_b = read_from_file(&path_b);
+			assert_eq!("bar", read_a);
+			assert_eq!("foo", read_b);
+		}
+		// `renamex_np` not available then swapping should fail!
+		else {
+			assert!(swap(&dir_a, &dir_b).is_err());
+		}
 	}
 
 	#[test]
