@@ -4,9 +4,9 @@ extern crate libloading;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::{io, ffi};
-use self::libloading::os::unix::Library;
+use self::libloading::os::unix::{Library, Symbol};
 
-unsafe fn get_renamex_np() -> Option<libloading::os::unix::Symbol<unsafe extern fn (oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int>> {
+unsafe fn get_renamex_np() -> Option<Symbol<unsafe extern fn (oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int>> {
 	let lib = Library::this();
 	lib.get(b"renamex_np").ok()
 }
