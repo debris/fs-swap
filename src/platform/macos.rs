@@ -6,6 +6,7 @@ use std::path::Path;
 use std::{io, ffi};
 use self::libloading::os::unix::{Library, Symbol};
 
+/// `renamex_np` is available only on macos >= 10.12
 unsafe fn get_renamex_np() -> Option<Symbol<unsafe extern fn (oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int>> {
 	let lib = Library::this();
 	lib.get(b"renamex_np").ok()
@@ -22,20 +23,22 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 	let b_path = ffi::CString::new(b.as_ref().as_os_str().as_bytes())?;
 
 	unsafe {
+		// `renamex_np` is available only on macos >= 10.12
+		// if not available, let's fallback to `exchangedata`
 		if let Some(renamex_np) = get_renamex_np() {
 			if renamex_np(a_path.as_ptr(), b_path.as_ptr(), RENAME_SWAP) == 0 {
 				return Ok(())
 			}
 
+			// `renamex_np` throws ENOTSUP if volume is not APFS
+			// if it's not APFS, let's fallback to `exchangedata`
 			let err = *libc::__error();
 			if err != libc::ENOTSUP {
 				return Err(io::Error::new(io::ErrorKind::Other, format!("renamex_np failed with code: {}", err)));
 			}
 		}
 
-		// some volumes do not support swapping
-		// it these cases, let's try to swap files using
-		// swapping directories returns `EINVAL`
+		// `exchangedata` does not support swapping directories
 		if exchangedata(a_path.as_ptr(), b_path.as_ptr(), 0) == 0 {
 			return Ok(())
 		}
