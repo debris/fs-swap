@@ -1,6 +1,6 @@
 [package]
 name = "fs-swap"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["debris <marek.kotewicz@gmail.com>"]
 description = "Cross-platform implementation of path swap"
 license = "MIT"
