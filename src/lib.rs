@@ -40,21 +40,23 @@ pub fn swap_nonatomic<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, 
 
 	match fs::rename(b, a) {
 		Ok(_) => (),
-		Err(_) => {
+		error => {
 			// let's try to recover the previous state
 			// if it fails, there is nothing we can do
-			return fs::rename(&tmp, a);
+			fs::rename(&tmp, a)?;
+			return error
 		},
 	}
 
 	// rename tmp to b
 	match fs::rename(&tmp, b) {
 		Ok(_) => Ok(()),
-		Err(_) => {
+		error => {
 			// let's try to recover to previous state
 			// if it fails, there is nothing we can do
 			fs::rename(a, b)?;
-			fs::rename(&tmp, a)
+			fs::rename(&tmp, a)?;
+			error
 		},
 	}
 }
