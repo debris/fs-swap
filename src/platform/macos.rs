@@ -14,7 +14,7 @@ lazy_static! {
 	};
 }
 
-
+#[cfg(target_arch = "x86_64")]
 extern "stdcall" {
 	fn exchangedata(oldpath: *const libc::c_char, newpath: *const libc::c_char, flags: libc::c_uint) -> libc::c_int;
 }
@@ -41,6 +41,7 @@ pub fn swap<A, B>(a: A, b: B) -> io::Result<()> where A: AsRef<Path>, B: AsRef<P
 			}
 		}
 
+		#[cfg(target_arch = "x86_64")]
 		// `exchangedata` does not support swapping directories
 		if exchangedata(a_path.as_ptr(), b_path.as_ptr(), 0) == 0 {
 			return Ok(())
