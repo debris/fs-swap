@@ -6,7 +6,7 @@ use std::{io, ffi};
 
 unsafe fn renameat2(
 	olddirfd: libc::c_int, oldpath: *const libc::c_char, 
-	newdirfd: libc::c_int, newpath: *const libc::c_char, flags: libc::c_int
+	newdirfd: libc::c_int, newpath: *const libc::c_char, flags: libc::c_uint
 ) -> libc::c_int {
 	libc::syscall(libc::SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags) as libc::c_int
 }
